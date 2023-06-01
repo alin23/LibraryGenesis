@@ -9,6 +9,20 @@
 import UIKit
 
 class LoadingFooterView: UIView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+
+        addSubview(indicator)
+        NSLayoutConstraint.activate([
+            indicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+            indicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+        ])
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     var indicator: UIActivityIndicatorView = {
         let indicator: UIActivityIndicatorView
@@ -24,28 +38,14 @@ class LoadingFooterView: UIView {
         indicator.hidesWhenStopped = true
         return indicator
     }()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        
-        self.addSubview(indicator)
-        NSLayoutConstraint.activate([
-            self.indicator.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            self.indicator.centerXAnchor.constraint(equalTo: self.centerXAnchor)
-        ])
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
+
     func stopAnimating() {
-        if self.indicator.isAnimating {
-            self.indicator.stopAnimating()
+        if indicator.isAnimating {
+            indicator.stopAnimating()
         }
     }
-    
+
     func startAnimating() {
-        self.indicator.startAnimating()
+        indicator.startAnimating()
     }
 }

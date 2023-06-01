@@ -9,7 +9,21 @@
 import UIKit
 
 class Snackbar: UIView {
-    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        if #available(iOS 13.0, *) {
+            self.backgroundColor = .secondarySystemBackground
+        } else {
+            backgroundColor = .lightGray
+        }
+        setupSubviews()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     let stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -18,8 +32,8 @@ class Snackbar: UIView {
         stackView.axis = .horizontal
         return stackView
     }()
-    
-    var labelMessage: UILabel =  {
+
+    var labelMessage: UILabel = {
         let label = UILabel()
         if #available(iOS 13.0, *) {
             label.textColor = .label
@@ -32,7 +46,7 @@ class Snackbar: UIView {
         label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         return label
     }()
-    
+
     var buttonAction: UIButton = {
         let button = UIButton()
         button.setTitle("Retry", for: .normal)
@@ -42,58 +56,41 @@ class Snackbar: UIView {
         button.addTarget(self, action: #selector(onRetryAction(sender:)), for: .touchUpInside)
         return button
     }()
-    
+
+    var onRetry: (() -> Void)?
+
     var message: String? {
         willSet {
-            self.labelMessage.text = newValue
+            labelMessage.text = newValue
         }
     }
-    
-    var onRetry: (() -> ())?
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        if #available(iOS 13.0, *) {
-            self.backgroundColor = .secondarySystemBackground
-        } else {
-            self.backgroundColor = .lightGray
-        }
-        self.setupSubviews()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    
+
     private func setupSubviews() {
-        
-        self.addSubview(stackView)
-        self.stackView.addArrangedSubview(labelMessage)
-        self.stackView.addArrangedSubview(buttonAction)
-        
+        addSubview(stackView)
+        stackView.addArrangedSubview(labelMessage)
+        stackView.addArrangedSubview(buttonAction)
+
         NSLayoutConstraint.activate([
-            self.stackView.topAnchor.constraint(equalTo: self.topAnchor, constant: 5),
-            self.stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -5),
-            self.stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 10),
-            self.stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -10),
-            self.buttonAction.widthAnchor.constraint(equalToConstant: 60)
+            stackView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
+            buttonAction.widthAnchor.constraint(equalToConstant: 60),
         ])
-        
-        self.setupShadow()
+
+        setupShadow()
     }
-    
+
     private func setupShadow() {
-        
-        self.layer.shadowColor = UIColor.lightGray.cgColor
-        self.layer.shadowOpacity = 0.5
-        self.layer.shadowOffset = .zero
-        self.layer.shadowRadius = 5
-        self.layer.cornerRadius = 12
+        layer.shadowColor = UIColor.lightGray.cgColor
+        layer.shadowOpacity = 0.5
+        layer.shadowOffset = .zero
+        layer.shadowRadius = 5
+        layer.cornerRadius = 12
     }
-    
+
     @objc
     private func onRetryAction(sender: UIButton) {
-        self.onRetry?()
+        onRetry?()
     }
 }

@@ -9,65 +9,66 @@
 import Foundation
 
 class SearchBookService: BookService {
-    
-        
-    private var isLoading = false
-    
-    private var query: String!
-    
-    func searchBooks(with query: String, and page: Int = 1) {
+    var lastIndex: Int {
+        books.count - 1
+    }
+
+    var isEmptySearch: Bool {
+        page == 1 && books.isEmpty
+    }
+
+    func searchBooks(with query: String, and page: Int = 1, genre: BookGenre = .fiction) {
         self.query = query
-        guard let url = self.buildURLComponents() else { return }
-        self.loadBooks(from: url) { result in
-            switch result {
-            case .success(let books):
-                self.books.append(contentsOf: books)
-                self.page += 1
-                self.delegate?.didLoadBooks(self)
-                break
-            case .failure(let error):
-                self.delegate?.didFailedLoadBooks(self, with: error)
-                break
+        guard let url = buildURLComponents(genre: genre) else { return }
+        loadBooks(from: url) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case let .success(books):
+                    self.books.append(contentsOf: books)
+                    self.page += 1
+                    self.delegate?.didLoadBooks(self)
+                case let .failure(error):
+                    self.delegate?.didFailedLoadBooks(self, with: error)
+                }
+                self.isLoading = false
             }
-            self.isLoading = false
         }
     }
-    
-    func loadNextPage() {
+
+    func loadNextPage(genre: BookGenre = .fiction) {
         guard !isLoading else { return }
-        self.isLoading = true
-        self.searchBooks(with: query, and: page)
+        isLoading = true
+        searchBooks(with: query, and: page, genre: genre)
     }
-    
-    func refreshBooks() {
-        self.searchBooks(with: query)
+
+    func refreshBooks(genre: BookGenre = .fiction) {
+        searchBooks(with: query, genre: genre)
     }
-    
-    var lastIndex: Int {
-        return self.books.count - 1
-    }
-    
-    private func buildURLComponents() -> URL? {
-        
-        var urlComponents = URLComponents(url: .search, resolvingAgainstBaseURL: true)
-        urlComponents?.queryItems = [
-            URLQueryItem(name: "req", value: query),
-            URLQueryItem(name: "phrase", value: "0"),
-            URLQueryItem(name: "view", value: "simple"),
-            URLQueryItem(name: "column", value: "def"),
-            URLQueryItem(name: "sort", value: "def"),
-            URLQueryItem(name: "sortmode", value: "ASC"),
-            URLQueryItem(name: "page", value: String(page))
-        ]
-        return urlComponents?.url
-    }
-    
+
     func removeAll() {
-        self.page = 1
-        self.books.removeAll()
+        page = 1
+        books.removeAll()
     }
-    
-    var isEmptySearch: Bool {
-        return page == 1 && self.books.isEmpty
+
+    private var isLoading = false
+
+    private var query: String!
+
+    private func buildURLComponents(genre: BookGenre = .fiction) -> URL? {
+        var urlComponents = URLComponents(url: genre == .fiction ? .searchFiction : .search, resolvingAgainstBaseURL: true)
+        urlComponents?.queryItems = genre == .fiction
+            ? [
+                URLQueryItem(name: "q", value: query),
+            ]
+            : [
+                URLQueryItem(name: "req", value: query),
+                URLQueryItem(name: "phrase", value: "0"),
+                URLQueryItem(name: "view", value: "simple"),
+                URLQueryItem(name: "column", value: "def"),
+                URLQueryItem(name: "sort", value: "def"),
+                URLQueryItem(name: "sortmode", value: "ASC"),
+                URLQueryItem(name: "page", value: String(page)),
+            ]
+        return urlComponents?.url
     }
 }

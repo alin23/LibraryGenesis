@@ -6,30 +6,45 @@
 //  Copyright © 2020 Stamenkovski. All rights reserved.
 //
 
-import UIKit
 import Kingfisher
+import UIKit
 
 class BookTableViewCell: UITableViewCell {
+    @IBOutlet var imageViewCover: UIImageView!
 
-    @IBOutlet weak var imageViewCover: UIImageView!
-    
-    @IBOutlet weak var labelTitle: UILabel!
-    @IBOutlet weak var labelAuthor: UILabel!
-    @IBOutlet weak var labelYear: UILabel!
-    
+    @IBOutlet var labelTitle: UILabel!
+    @IBOutlet var labelAuthor: UILabel!
+    @IBOutlet var labelYear: UILabel!
+    @IBOutlet var labelType: UILabel!
+
     override func prepareForReuse() {
         super.prepareForReuse()
-        self.imageViewCover.image = nil
+        imageViewCover.image = nil
     }
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
     }
-    
+
     func setup(with book: Book) {
-        self.labelTitle.text = book.title
-        self.labelAuthor.text = book.author
-        self.labelYear.text = book.year
-        self.imageViewCover.kf.setImage(with: URL.image(with: book.coverURL))
+        labelTitle.text = book.title
+        labelAuthor.text = book.author
+        labelYear.text = [book.language, book.year]
+            .compactMap { $0 }
+            .filter(\.isNotEmpty)
+            .joined(separator: " | ")
+        labelType.text = [book.fileType, book.fileSize]
+            .compactMap { $0 }
+            .filter(\.isNotEmpty)
+            .joined(separator: " / ")
+
+        if let url = book.coverURL {
+            imageViewCover.kf.indicatorType = .activity
+            if url.contains("/fictioncovers/") {
+                imageViewCover.kf.setImage(with: URL(string: url))
+            } else {
+                imageViewCover.kf.setImage(with: URL.image(with: url))
+            }
+        }
     }
 }

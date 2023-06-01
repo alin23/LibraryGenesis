@@ -9,36 +9,36 @@
 import Foundation
 
 class LatestBookService: BookService {
-    
-    private var isLoading = false
-    
-    func fetchLatestBooks(with page: Int = 1) {
-        self.loadBooks(from: .latestURLHTML(with: page)) { result in
-            switch result {
-            case .success(let books):
-                self.books.append(contentsOf: books)
-                self.page += 1
-                self.delegate?.didLoadBooks(self)
-                break
-            case .failure(let error):
-                self.delegate?.didFailedLoadBooks(self, with: error)
-                break
+    var lastIndex: Int {
+        books.count - 1
+    }
+
+    func fetchLatestBooks(with page: Int = 1, genre: BookGenre = .fiction) {
+        let url: URL = genre == .fiction ? .latestFiction(with: page) : .latestURLHTML(with: page)
+        loadBooks(from: url) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case let .success(books):
+                    self.books.append(contentsOf: books)
+                    self.page += 1
+                    self.delegate?.didLoadBooks(self)
+                case let .failure(error):
+                    self.delegate?.didFailedLoadBooks(self, with: error)
+                }
+                self.isLoading = false
             }
-            self.isLoading = false
         }
     }
-    
+
     func loadNextPage() {
         guard !isLoading else { return }
-        self.isLoading = true
-        self.fetchLatestBooks(with: page)
+        isLoading = true
+        fetchLatestBooks(with: page)
     }
-    
-    var lastIndex: Int {
-        return self.books.count - 1
-    }
-    
+
     func refreshBooks() {
-        self.fetchLatestBooks(with: page)
+        fetchLatestBooks(with: page)
     }
+
+    private var isLoading = false
 }

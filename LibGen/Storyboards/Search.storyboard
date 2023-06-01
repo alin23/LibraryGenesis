@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="CPd-wu-SmP">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="CPd-wu-SmP">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -17,21 +18,33 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="pI0-fF-fw7">
-                                <rect key="frame" x="0.0" y="140" width="414" height="756"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <rect key="frame" x="0.0" y="144" width="414" height="752"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                             </tableView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="6Qf-8t-qlb"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="6Qf-8t-qlb" firstAttribute="trailing" secondItem="pI0-fF-fw7" secondAttribute="trailing" id="D8k-mx-HfG"/>
                             <constraint firstItem="pI0-fF-fw7" firstAttribute="leading" secondItem="6Qf-8t-qlb" secondAttribute="leading" id="NBx-db-De0"/>
                             <constraint firstAttribute="bottom" secondItem="pI0-fF-fw7" secondAttribute="bottom" id="Ttx-If-hH9"/>
                             <constraint firstItem="pI0-fF-fw7" firstAttribute="top" secondItem="6Qf-8t-qlb" secondAttribute="top" id="ymQ-Mj-VSE"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="6Qf-8t-qlb"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Search" id="sqg-ad-rFY"/>
+                    <navigationItem key="navigationItem" title="Search" id="sqg-ad-rFY">
+                        <barButtonItem key="rightBarButtonItem" style="plain" id="SrI-f4-aio">
+                            <segmentedControl key="customView" opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="Zsi-DG-zcx">
+                                <rect key="frame" x="251" y="5.5" width="143" height="33"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <segments>
+                                    <segment title="Fiction"/>
+                                    <segment title="Sci-tech"/>
+                                </segments>
+                            </segmentedControl>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
+                        <outlet property="booksGenreSelector" destination="Zsi-DG-zcx" id="Ey8-td-ddt"/>
                         <outlet property="tableView" destination="pI0-fF-fw7" id="hX5-L1-wD4"/>
                     </connections>
                 </viewController>
@@ -46,7 +59,7 @@
                     <tabBarItem key="tabBarItem" title="Search" image="search_tabbar" id="UQw-iT-SUR"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" largeTitles="YES" id="YMM-qh-Zsl">
-                        <rect key="frame" x="0.0" y="44" width="414" height="96"/>
+                        <rect key="frame" x="0.0" y="48" width="414" height="96"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -61,5 +74,8 @@
     </scenes>
     <resources>
         <image name="search_tabbar" width="24" height="24"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
     </resources>
 </document>

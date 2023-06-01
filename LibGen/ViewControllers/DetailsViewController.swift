@@ -8,50 +8,59 @@
 
 import UIKit
 
+// MARK: - DetailsViewController
+
 class DetailsViewController: UIViewController {
-    
-    @IBOutlet weak var scrollView: UIScrollView!
-    @IBOutlet weak var imageViewHeader: UIImageView!
-    
-    @IBOutlet weak var buttonExpandDescription: UIButton!
-    @IBOutlet weak var buttonDownload: UIButton!
-    
-    @IBOutlet weak var labelTitle: UILabel!
-    @IBOutlet weak var labelAuthor: UILabel!
-    @IBOutlet weak var labelYear: UILabel!
-    @IBOutlet weak var labelLanguage: UILabel!
-    @IBOutlet weak var labelPublisher: UILabel!
-    @IBOutlet weak var labelPages: UILabel!
-    @IBOutlet weak var labelFileType: UILabel!
-    
-    @IBOutlet weak var labelDescription: UILabel!
-    
-    @IBOutlet weak var imageViewHeaderHeight: NSLayoutConstraint!
-    private var imageViewHeaderOriginalHeight: CGFloat!
-    
+    @IBOutlet var scrollView: UIScrollView!
+    @IBOutlet var imageViewHeader: UIImageView!
+
+    @IBOutlet var buttonExpandDescription: UIButton!
+    @IBOutlet var buttonDownload: UIButton!
+
+    @IBOutlet var labelTitle: UILabel!
+    @IBOutlet var labelAuthor: UILabel!
+    @IBOutlet var labelYear: UILabel!
+    @IBOutlet var labelLanguage: UILabel!
+    @IBOutlet var labelPublisher: UILabel!
+    @IBOutlet var labelPages: UILabel!
+    @IBOutlet var labelFileType: UILabel!
+
+    @IBOutlet var labelDescription: UILabel!
+
+    @IBOutlet var imageViewHeaderHeight: NSLayoutConstraint!
+
     var book: Book!
-    
+    weak var parentView: UIViewController!
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupBookData()
-        self.setupStretchyHeader()
+        setupBookData()
+        setupStretchyHeader()
+        if let view = parentView as? LatestViewController, book.coverURL == nil {
+            view.service.fetchDetails(book: book) { book in
+                self.book = book
+                self.setupBookData()
+                self.setupStretchyHeader()
+            }
+        } else if let view = parentView as? SearchBookViewController, book.coverURL == nil {
+            view.service.fetchDetails(book: book) { book in
+                self.book = book
+                self.setupBookData()
+                self.setupStretchyHeader()
+            }
+        }
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.navigationBar.transparent()
+        navigationController?.navigationBar.transparent()
     }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        self.navigationController?.navigationBar.removeTransparency()
+        navigationController?.navigationBar.removeTransparency()
     }
-    
-    private func setupStretchyHeader() {
-        self.imageViewHeaderOriginalHeight = self.imageViewHeaderHeight.constant
-        self.scrollView.delegate = self
-        self.scrollView.contentInset = .init(top: self.imageViewHeaderOriginalHeight, left: 0, bottom: 0, right: 0)
-    }
-    
+
     @IBAction
     func actionExpandDescription(_ sender: UIButton) {
         UIView.animate(withDuration: 0.3, delay: 0, options: [.allowUserInteraction, .curveLinear], animations: {
@@ -65,37 +74,68 @@ class DetailsViewController: UIViewController {
             self.view.layoutIfNeeded()
         }, completion: nil)
     }
-    
+
     @IBAction
     func actionDownload(_ sender: UIButton) {
-        Alert.showMirrors(on: self, sourceView: self.buttonDownload, for: book.md5) { url in
+        if let mirrors = book.mirrors, mirrors.isNotEmpty {
+            Alert.showMirrors(on: self, sourceView: buttonDownload, with: mirrors) { url in
+                if UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url)
+                } else {
+                    Alert.urlError(on: self)
+                }
+            }
+            return
+        }
+
+        guard let md5 = book.md5 else { return }
+        Alert.showMirrors(on: self, sourceView: buttonDownload, for: md5) { url in
             if UIApplication.shared.canOpenURL(url) {
-                 UIApplication.shared.open(url)
+                UIApplication.shared.open(url)
             } else {
                 Alert.urlError(on: self)
             }
         }
     }
-    
+
+    private var imageViewHeaderOriginalHeight: CGFloat!
+
+    private func setupStretchyHeader() {
+        imageViewHeaderOriginalHeight = imageViewHeaderHeight.constant
+        scrollView.delegate = self
+        scrollView.contentInset = .init(top: imageViewHeaderOriginalHeight, left: 0, bottom: 0, right: 0)
+    }
+
     private func setupBookData() {
-        self.imageViewHeader.kf.setImage(with: URL.image(with: book.coverURL))
-        self.labelTitle.text = book.title
-        self.labelYear.text = book.year
-        self.labelAuthor.text = book.author
-        self.labelLanguage.text = book.language
-        self.labelPublisher.text = book.publisherOrEmpty
-        self.labelPages.text = book.pagesOrEmpty
-        self.labelFileType.text = book.fileType
-        self.labelDescription.text = book.descriptionOrEmpty.html
+        if let url = book.coverURL {
+            imageViewHeader.kf.indicatorType = .activity
+            if url.contains("/fictioncovers/") {
+                imageViewHeader.kf.setImage(with: URL(string: url))
+            } else {
+                imageViewHeader.kf.setImage(with: URL.image(with: url))
+            }
+        }
+        labelTitle.text = book.title
+        labelYear.text = book.year
+        labelAuthor.text = book.author
+        labelLanguage.text = book.language
+        labelPublisher.text = book.publisher ?! "N/A"
+        labelPages.text = book.pages ?! "N/A"
+        if let type = book.fileType, let size = book.fileSize {
+            labelFileType.text = "\(type) / \(size)"
+        } else {
+            labelFileType.text = book.fileType ?! book.fileSize ?! "N/A"
+        }
+        labelDescription.text = (book.description ?! "N/A").html
     }
 }
+
+// MARK: UIScrollViewDelegate
 
 extension DetailsViewController: UIScrollViewDelegate {
-    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let y = self.imageViewHeaderOriginalHeight - (scrollView.contentOffset.y  + self.imageViewHeaderOriginalHeight)
+        let y = imageViewHeaderOriginalHeight - (scrollView.contentOffset.y + imageViewHeaderOriginalHeight)
         let height = min(max(y, 100), UIScreen.main.bounds.height)
-        self.imageViewHeaderHeight.constant = height
+        imageViewHeaderHeight.constant = height
     }
 }
-

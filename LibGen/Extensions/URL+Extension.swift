@@ -9,19 +9,26 @@
 import Foundation
 
 extension URL {
-    
-    static let baseURL = URL(string: "http://gen.lib.rus.ec/json.php")!
-    
+    static let baseURL = URL(string: "http://libgen.rs/json.php")!
+
     static func latestURLHTML(with page: Int) -> URL {
-        return URL(string: "http://gen.lib.rus.ec/search.php?mode=last&view=simple&column=def&sort=def&sortmode=ASC&page=\(page)")!
+        URL(string: "http://libgen.rs/search.php?mode=last&view=simple&column=def&sort=def&sortmode=ASC&page=\(page)")!
     }
-    
+
+    static func latestFiction(with page: Int) -> URL {
+        URL(string: "https://libgen.rs/fiction/recent?page=\(page)")!
+    }
+
     static var search: URL {
-        return URL(string: "http://gen.lib.rus.ec/search.php")!
+        URL(string: "https://libgen.rs")!
     }
-    
+
+    static var searchFiction: URL {
+        URL(string: "https://libgen.rs/fiction")!
+    }
+
     static func image(with url: String?) -> URL? {
-        guard let url = url else { return nil }
-        return URL(string: "http://gen.lib.rus.ec/covers/\(url)")
+        guard let url else { return nil }
+        return URL(string: "http://libgen.rs/covers/\(url)")
     }
 }

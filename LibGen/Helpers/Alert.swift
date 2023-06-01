@@ -9,10 +9,26 @@
 import UIKit
 
 struct Alert {
-    
-    static func showMirrors(on vc: UIViewController,sourceView: UIView, for md5: String, completion: @escaping((URL) -> Void)) {
+    static func showMirrors(on vc: UIViewController, sourceView: UIView, with mirrors: [URL], completion: @escaping ((URL) -> Void)) {
         let actionSheetMirrors = UIAlertController(title: "Select download mirror", message: nil, preferredStyle: .actionSheet)
-        
+
+        for mirror in mirrors {
+            actionSheetMirrors.addAction(UIAlertAction(title: mirror.host(), style: .default) { _ in
+                completion(mirror)
+            })
+        }
+
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in }
+        actionSheetMirrors.addAction(cancelAction)
+        if let popoverController = actionSheetMirrors.popoverPresentationController {
+            popoverController.sourceView = sourceView
+            popoverController.sourceRect = sourceView.bounds
+        }
+        vc.present(actionSheetMirrors, animated: true, completion: nil)
+    }
+    static func showMirrors(on vc: UIViewController, sourceView: UIView, for md5: String, completion: @escaping ((URL) -> Void)) {
+        let actionSheetMirrors = UIAlertController(title: "Select download mirror", message: nil, preferredStyle: .actionSheet)
+
         let libTipsMirrorAction = UIAlertAction(title: "Mirror 1", style: .default) { _ in
             completion(URL(string: "http://libtips.org/main/\(md5)")!)
         }
@@ -25,14 +41,14 @@ struct Alert {
         let bOKMirrorAction = UIAlertAction(title: "Mirror 4", style: .default) { _ in
             completion(URL(string: "http://b-ok.cc/md5/\(md5)")!)
         }
-        
+
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in }
-        
+
         actionSheetMirrors.addAction(libTipsMirrorAction)
         actionSheetMirrors.addAction(libGenMirrorAction)
         actionSheetMirrors.addAction(bookFiMirrorAction)
         actionSheetMirrors.addAction(bOKMirrorAction)
-        
+
         actionSheetMirrors.addAction(cancelAction)
         if let popoverController = actionSheetMirrors.popoverPresentationController {
             popoverController.sourceView = sourceView
@@ -40,13 +56,12 @@ struct Alert {
         }
         vc.present(actionSheetMirrors, animated: true, completion: nil)
     }
-    
+
     static func urlError(on vc: UIViewController) {
         let alert = UIAlertController(title: "Link cannot be open, try another mirror link.", message: nil, preferredStyle: .alert)
-        
+
         let okAction = UIAlertAction(title: "OK", style: .cancel)
         alert.addAction(okAction)
         vc.present(alert, animated: true, completion: nil)
     }
-    
 }
