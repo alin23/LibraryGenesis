@@ -19,8 +19,8 @@ class SearchBookService: BookService {
 
     func searchBooks(with query: String, and page: Int = 1, genre: BookGenre = .fiction) {
         self.query = query
-        guard let url = buildURLComponents(genre: genre) else { return }
-        loadBooks(from: url) { result in
+        guard let url = buildURLComponents(genre: genre, page: page) else { return }
+        let completion: (Result<[Book], LibError>) -> Void = { result in
             DispatchQueue.main.async {
                 switch result {
                 case let .success(books):
@@ -33,6 +33,11 @@ class SearchBookService: BookService {
                 self.isLoading = false
             }
         }
+
+        if genre == .fiction, let url = buildURLComponents(genre: genre, language: "Romanian", page: page) {
+            loadBooks(from: url, completion: completion)
+        }
+        loadBooks(from: url, completion: completion)
     }
 
     func loadNextPage(genre: BookGenre = .fiction) {
@@ -54,11 +59,13 @@ class SearchBookService: BookService {
 
     private var query: String!
 
-    private func buildURLComponents(genre: BookGenre = .fiction) -> URL? {
+    private func buildURLComponents(genre: BookGenre = .fiction, language: String = "English", page: Int = 1) -> URL? {
         var urlComponents = URLComponents(url: genre == .fiction ? .searchFiction : .search, resolvingAgainstBaseURL: true)
         urlComponents?.queryItems = genre == .fiction
             ? [
                 URLQueryItem(name: "q", value: query),
+                URLQueryItem(name: "language", value: language),
+                URLQueryItem(name: "page", value: String(page)),
             ]
             : [
                 URLQueryItem(name: "req", value: query),
@@ -67,7 +74,6 @@ class SearchBookService: BookService {
                 URLQueryItem(name: "column", value: "def"),
                 URLQueryItem(name: "sort", value: "def"),
                 URLQueryItem(name: "sortmode", value: "ASC"),
-                URLQueryItem(name: "page", value: String(page)),
             ]
         return urlComponents?.url
     }
